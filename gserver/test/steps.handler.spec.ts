@@ -78,7 +78,7 @@ describe('getStrictGherkinType', () => {
   });
 });
 
-describe('geStepDefinitionMatch', () => {
+describe('getStepDefinitionMatch', () => {
   describe('gherkin strings types', () => {
     const strings = [
       'Given(/I do something/, function(){);',
@@ -90,7 +90,7 @@ describe('geStepDefinitionMatch', () => {
     ];
     strings.forEach((str) => {
       it(`should parse "${str}" step string`, () => {
-        const match = s.geStepDefinitionMatch(str);
+        const match = s.getStepDefinitionMatch(str);
         expect(match).not.toBeNull();
         expect(match![4]).toStrictEqual('I do something');
       });
@@ -111,7 +111,7 @@ describe('geStepDefinitionMatch', () => {
     ];
     gherkinWords.forEach((g) => {
       it(`should parse "${g}(/I do something/" string with ${g} gherkin word`, () => {
-        const match = s.geStepDefinitionMatch(
+        const match = s.getStepDefinitionMatch(
           `${g}(/I do something/, function(){);`
         );
         expect(match).not.toBeNull();
@@ -133,7 +133,7 @@ describe('geStepDefinitionMatch', () => {
     ];
     nonStandardStrings.forEach((str) => {
       it(`should get "${str[1]}" step from "${str[0]}" string`, () => {
-        const match = s.geStepDefinitionMatch(str[0]);
+        const match = s.getStepDefinitionMatch(str[0]);
         expect(match).not.toBeNull();
         expect(match![4]).toStrictEqual(str[1]);
       });
@@ -148,7 +148,7 @@ describe('geStepDefinitionMatch', () => {
     ];
     inbvalidStrings.forEach((str) => {
       it(`should not parse "${str}" string`, () => {
-        const match = s.geStepDefinitionMatch(str);
+        const match = s.getStepDefinitionMatch(str);
         expect(match).toBeNull();
       });
     });
@@ -158,7 +158,26 @@ describe('geStepDefinitionMatch', () => {
     const line =
       'Then(/^I do Fast Sign in with "([^"]*)" and "([^"]*)"$/)do |email, pwd|';
     const match = '^I do Fast Sign in with "([^"]*)" and "([^"]*)"$';
-    expect(s.geStepDefinitionMatch(line)![4]).toStrictEqual(match);
+    expect(s.getStepDefinitionMatch(line)![4]).toStrictEqual(match);
+  });
+});
+
+describe('getStepDefinition', () => {
+  it('should handle a multi-line step definition', () => {
+    const lines = [
+      '@then(',
+      '    "I do something for the column \'{first_column}\' "',
+      '    "and the column \'{second_column}\'"',
+      ')'
+    ];
+    const { match } = s.getStepDefinition(lines[0], 0, lines);
+    expect(match).not.toBeNull();
+  });
+
+  it('should not not match when a step definition is not complete', () => {
+    const line = '@then(';
+    const { match } = s.getStepDefinition(line, 0, [line]);
+    expect(match).toBeNull();
   });
 });
 
