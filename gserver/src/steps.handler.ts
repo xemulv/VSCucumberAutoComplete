@@ -292,6 +292,11 @@ export default class StepsHandler {
         //https://docs.cucumber.io/cucumber-expressions/#custom-parameters
         step = step.replace(/([^\\]|^){(?![\d,])(.*?)}/g, '$1.*');
 
+        //Python's `re` module uses `(?P<name>...)` for named groups, which is not
+        //valid JS RegExp syntax (`new RegExp` throws "Invalid group") and would
+        //silently drop the whole step. JS uses `(?<name>...)` for the same thing.
+        step = step.replace(/\(\?P</g, '(?<');
+
         //Escape all the regex symbols to avoid errors
         step = escapeRegExp(step);
 
