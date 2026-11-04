@@ -283,7 +283,7 @@ connection.onDefinition(async (position: TextDocumentPositionParams) => {
         return pagesHandler.getDefinition(line, char);
     }
     if (shouldHandleSteps(settings) && stepsHandler) {
-        return stepsHandler.getDefinition(line, text);
+        return stepsHandler.getDefinition(line, text, pos.line);
     }
     return Location.create(uri, Range.create(pos, pos));
 });

@@ -8,6 +8,7 @@ import {
     DiagnosticSeverity,
     Position,
     Location,
+    LocationLink,
     Range,
     CompletionItemKind,
     InsertTextFormat,
@@ -661,13 +662,37 @@ export default class StepsHandler {
         }
     }
 
-    getDefinition(line: string, text: string) {
+    getDefinition(
+        line: string,
+        text: string,
+        lineNumber: number
+    ): LocationLink[] | null {
         const match = this.getGherkinMatch(line, text);
         if (!match) {
             return null;
         }
         const step = this.getStepByText(match[4]);
-        return step ? step.def : null;
+        if (!step) {
+            return null;
+        }
+        //Underline the whole step text (not just the word under the cursor) on ctrl+hover
+        const [, before, gherkinWord, spacing] = match;
+        const startChar = before.length + gherkinWord.length + spacing.length;
+        const originSelectionRange = Range.create(
+            Position.create(lineNumber, startChar),
+            Position.create(lineNumber, line.length)
+        );
+        //`Step.def` is typed as the broader LSP `Definition` (`Location | Location[]`),
+        //but `getSteps` always builds it as a single `Location`.
+        const def = Array.isArray(step.def) ? step.def[0] : step.def;
+        return [
+            {
+                originSelectionRange,
+                targetUri: def.uri,
+                targetRange: def.range,
+                targetSelectionRange: def.range,
+            },
+        ];
     }
 
     getStrictGherkinType(gherkinPart: string, lineNumber: number, text: string) {
