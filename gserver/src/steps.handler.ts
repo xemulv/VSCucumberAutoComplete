@@ -36,6 +36,26 @@ import {
 
 import { Settings, StepSettings, CustomParameter } from './types';
 
+//Markdown fence language ids for the step definition languages this extension supports
+const HOVER_LANGUAGE_BY_EXTENSION: Record<string, string> = {
+    js: 'javascript',
+    jsx: 'javascript',
+    ts: 'typescript',
+    tsx: 'typescript',
+    py: 'python',
+    rb: 'ruby',
+    kt: 'kotlin',
+    java: 'java',
+    php: 'php',
+    cs: 'csharp',
+    go: 'go',
+};
+
+function getHoverLanguage(filePath: string): string {
+    const ext = filePath.split('.').pop() || '';
+    return HOVER_LANGUAGE_BY_EXTENSION[ext.toLowerCase()] || '';
+}
+
 export type Step = {
   id: string;
   reg: RegExp;
@@ -721,10 +741,11 @@ export default class StepsHandler {
         //`def.uri` is built by `getOSPath` as `'file:' + path`, strip it back to a real fs path
         const filePath = def.uri.replace(/^file:/, '');
         const snippet = getFileContent(filePath).split(/\r?\n/g)[def.range.start.line] || '';
+        const language = getHoverLanguage(filePath);
         return {
             contents: {
                 kind: MarkupKind.Markdown,
-                value: '```\n' + snippet + '\n```',
+                value: '```' + language + '\n' + snippet + '\n```',
             },
             range,
         };

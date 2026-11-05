@@ -554,6 +554,11 @@ describe('getHover', () => {
     expect((hover?.contents as { value: string }).value)
       .toContain('this.When(/^I do something$/, function (next) {');
   });
+  it('should fence the snippet with the language inferred from the step file extension', () => {
+    const hover = s.getHover('When I do something', '', 0);
+    expect((hover?.contents as { value: string }).value)
+      .toMatch(/^```javascript\n/);
+  });
   it('should not return hover for missing step', () => {
     const hover = s.getHover('When I do something else', '', 0);
     expect(hover).toBeNull();
