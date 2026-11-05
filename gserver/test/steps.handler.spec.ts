@@ -1,4 +1,4 @@
-import StepsHandler from '../src/steps.handler';
+import StepsHandler, { getHoverSnippetLines } from '../src/steps.handler';
 import { GherkinType } from '../src/gherkin';
 import { getFileContent } from '../src/util';
 import { defaultSettings } from './data/defaultSettings';
@@ -563,9 +563,55 @@ describe('getHover', () => {
     const hover = s.getHover('When I do something else', '', 0);
     expect(hover).toBeNull();
   });
+  it('should stretch the snippet across a multi-line step definition', () => {
+    const hover = s.getHover('When I do some multi-lines test', '', 0);
+    expect(hover).not.toBeNull();
+    const value = (hover?.contents as { value: string }).value;
+    expect(value).toContain('function(next) {');
+    expect(value).toContain(');');
+  });
   it('should correctly handle spaces at the line beginning', () => {
     const hover = s.getHover('   When I do something', '', 0);
     expect(hover).not.toBeNull();
+  });
+});
+
+describe('getHoverSnippetLines', () => {
+  it('should stop at the next step decorator, past the def and its body', () => {
+    const lines = [
+      '@given(parsers.parse(\'a member "{name}" of the group {tid:d}\'))',
+      'def member_with_points(name: str, tid: int) -> None:',
+      '    _member(name, tid)',
+      '',
+      '@given(parsers.parse(\'a different step\'))',
+      'def a_different_step() -> None:',
+      '    pass',
+    ];
+    const snippet = getHoverSnippetLines(lines, 0);
+    expect(snippet).toStrictEqual(lines.slice(0, 4));
+  });
+  it('should not stop on a decorator stacked before the def of the same step', () => {
+    const lines = [
+      '@given(parsers.parse(\'a given step\'))',
+      '@when(parsers.parse(\'a when step\'))',
+      'def shared_step() -> None:',
+      '    pass',
+      '',
+      '@given(parsers.parse(\'a different step\'))',
+      'def a_different_step() -> None:',
+      '    pass',
+    ];
+    const snippet = getHoverSnippetLines(lines, 0);
+    expect(snippet).toStrictEqual(lines.slice(0, 5));
+  });
+  it('should cap at 10 lines when no next decorator appears in range', () => {
+    const lines = [
+      '@given(parsers.parse(\'a long step\'))',
+      'def a_long_step() -> None:',
+      ...Array.from({ length: 20 }, (_, i) => `    line_${i}`),
+    ];
+    const snippet = getHoverSnippetLines(lines, 0);
+    expect(snippet).toHaveLength(10);
   });
 });
 

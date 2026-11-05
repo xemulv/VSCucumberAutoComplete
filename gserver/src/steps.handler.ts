@@ -36,6 +36,35 @@ import {
 
 import { Settings, StepSettings, CustomParameter } from './types';
 
+//Max number of source lines shown in the ctrl+hover preview, starting from the step definition line
+const HOVER_SNIPPET_MAX_LINES = 10;
+
+//Stretches the preview to cover a Python `def` and its body, capped at HOVER_SNIPPET_MAX_LINES.
+//Decorators stacked before the `def` (e.g. multiple `@given`/`@when` on the same step) don't stop the
+//preview - only a decorator seen AFTER the `def` (the next step's) does. Files with no `def` line (other
+//languages) never trigger that stop condition, so they just fall back to the capped window.
+const PYTHON_DEF_RE = /^(async\s+)?def\s/;
+
+export function getHoverSnippetLines(fileLines: string[], startLine: number): string[] {
+    const maxLine = Math.min(
+        startLine + HOVER_SNIPPET_MAX_LINES - 1,
+        fileLines.length - 1
+    );
+    let seenDef = false;
+    let endLine = startLine;
+    for (let i = startLine; i <= maxLine; i++) {
+        const trimmed = fileLines[i].trim();
+        if (seenDef && trimmed.startsWith('@')) {
+            break;
+        }
+        if (PYTHON_DEF_RE.test(trimmed)) {
+            seenDef = true;
+        }
+        endLine = i;
+    }
+    return fileLines.slice(startLine, endLine + 1);
+}
+
 //Markdown fence language ids for the step definition languages this extension supports
 const HOVER_LANGUAGE_BY_EXTENSION: Record<string, string> = {
     js: 'javascript',
@@ -740,7 +769,8 @@ export default class StepsHandler {
         const def = Array.isArray(step.def) ? step.def[0] : step.def;
         //`def.uri` is built by `getOSPath` as `'file:' + path`, strip it back to a real fs path
         const filePath = def.uri.replace(/^file:/, '');
-        const snippet = getFileContent(filePath).split(/\r?\n/g)[def.range.start.line] || '';
+        const fileLines = getFileContent(filePath).split(/\r?\n/g);
+        const snippet = getHoverSnippetLines(fileLines, def.range.start.line).join('\n');
         const language = getHoverLanguage(filePath);
         return {
             contents: {
