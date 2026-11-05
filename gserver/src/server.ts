@@ -14,6 +14,7 @@ import {
     TextEdit,
     DocumentRangeFormattingParams,
     Location,
+    HoverParams,
     ProposedFeatures,
     InitializeParams,
     DidChangeConfigurationNotification,
@@ -75,6 +76,7 @@ connection.onInitialize((params: InitializeParams) => {
                 workspaceDiagnostics: false
             },
             definitionProvider: true,
+            hoverProvider: true,
             documentFormattingProvider: true,
             documentRangeFormattingProvider: true,
             documentOnTypeFormattingProvider: {
@@ -286,6 +288,18 @@ connection.onDefinition(async (position: TextDocumentPositionParams) => {
         return stepsHandler.getDefinition(line, text, pos.line);
     }
     return Location.create(uri, Range.create(pos, pos));
+});
+
+connection.onHover(async (position: HoverParams) => {
+    const settings = await getSettings();
+    const textDocument = documents.get(position.textDocument.uri);
+    const text = textDocument?.getText() || '';
+    const line = text.split(/\r?\n/g)[position.position.line];
+    const pos = position.position;
+    if (shouldHandleSteps(settings) && stepsHandler) {
+        return stepsHandler.getHover(line, text, pos.line);
+    }
+    return null;
 });
 
 connection.onDocumentFormatting(

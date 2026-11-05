@@ -547,6 +547,23 @@ describe('getDefinition', () => {
   });
 });
 
+describe('getHover', () => {
+  it('should return hover content with the step definition source for any gherkin position', () => {
+    const hover = s.getHover('When I do something', '', 0);
+    expect(hover).not.toBeNull();
+    expect((hover?.contents as { value: string }).value)
+      .toContain('this.When(/^I do something$/, function (next) {');
+  });
+  it('should not return hover for missing step', () => {
+    const hover = s.getHover('When I do something else', '', 0);
+    expect(hover).toBeNull();
+  });
+  it('should correctly handle spaces at the line beginning', () => {
+    const hover = s.getHover('   When I do something', '', 0);
+    expect(hover).not.toBeNull();
+  });
+});
+
 describe('getCompletion', () => {
   it('should return all the variants found', () => {
     const completion = s.getCompletion(' When I do', 1, '');

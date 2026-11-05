@@ -12,6 +12,8 @@ import {
     Range,
     CompletionItemKind,
     InsertTextFormat,
+    Hover,
+    MarkupKind,
 } from 'vscode-languageserver';
 
 import {
@@ -693,6 +695,39 @@ export default class StepsHandler {
                 targetSelectionRange: def.range,
             },
         ];
+    }
+
+    getHover(
+        line: string,
+        text: string,
+        lineNumber: number
+    ): Hover | null {
+        const match = this.getGherkinMatch(line, text);
+        if (!match) {
+            return null;
+        }
+        const step = this.getStepByText(match[4]);
+        if (!step) {
+            return null;
+        }
+        //Underline the whole step text (same range as in getDefinition) while hovering
+        const [, before, gherkinWord, spacing] = match;
+        const startChar = before.length + gherkinWord.length + spacing.length;
+        const range = Range.create(
+            Position.create(lineNumber, startChar),
+            Position.create(lineNumber, line.length)
+        );
+        const def = Array.isArray(step.def) ? step.def[0] : step.def;
+        //`def.uri` is built by `getOSPath` as `'file:' + path`, strip it back to a real fs path
+        const filePath = def.uri.replace(/^file:/, '');
+        const snippet = getFileContent(filePath).split(/\r?\n/g)[def.range.start.line] || '';
+        return {
+            contents: {
+                kind: MarkupKind.Markdown,
+                value: '```\n' + snippet + '\n```',
+            },
+            range,
+        };
     }
 
     getStrictGherkinType(gherkinPart: string, lineNumber: number, text: string) {
