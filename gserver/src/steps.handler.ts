@@ -62,7 +62,22 @@ export function getHoverSnippetLines(fileLines: string[], startLine: number): st
         }
         endLine = i;
     }
-    return fileLines.slice(startLine, endLine + 1);
+    return trimTrailingNoise(fileLines.slice(startLine, endLine + 1));
+}
+
+//Drops trailing blank lines and comment-only lines picked up between the step's body and whatever
+//follows it (e.g. a `# ==== Then ====` section separator), so the preview ends with real code.
+function trimTrailingNoise(lines: string[]): string[] {
+    let end = lines.length;
+    while (end > 1) {
+        const trimmed = lines[end - 1].trim();
+        if (trimmed === '' || trimmed.startsWith('#')) {
+            end--;
+        } else {
+            break;
+        }
+    }
+    return lines.slice(0, end);
 }
 
 //Markdown fence language ids for the step definition languages this extension supports

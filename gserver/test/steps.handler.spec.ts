@@ -588,7 +588,7 @@ describe('getHoverSnippetLines', () => {
       '    pass',
     ];
     const snippet = getHoverSnippetLines(lines, 0);
-    expect(snippet).toStrictEqual(lines.slice(0, 4));
+    expect(snippet).toStrictEqual(lines.slice(0, 3));
   });
   it('should not stop on a decorator stacked before the def of the same step', () => {
     const lines = [
@@ -602,7 +602,24 @@ describe('getHoverSnippetLines', () => {
       '    pass',
     ];
     const snippet = getHoverSnippetLines(lines, 0);
-    expect(snippet).toStrictEqual(lines.slice(0, 5));
+    expect(snippet).toStrictEqual(lines.slice(0, 4));
+  });
+  it('should drop a trailing section comment and the blank lines around it', () => {
+    const lines = [
+      '@when(parsers.parse(\'the user reads the stats on domain {domain_id:d} without a tid\'))',
+      'def user_reads_without_tid(user, domain_id):',
+      '    return _read(domain_id, user, None)',
+      '',
+      '',
+      '# ==== Then ====',
+      '',
+      '',
+      '@then("the body is null")',
+      'def body_null(response):',
+      '    assert _body(response) is None',
+    ];
+    const snippet = getHoverSnippetLines(lines, 0);
+    expect(snippet).toStrictEqual(lines.slice(0, 3));
   });
   it('should cap at 10 lines when no next decorator appears in range', () => {
     const lines = [
