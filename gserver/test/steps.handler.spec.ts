@@ -529,21 +529,21 @@ describe('validate', () => {
 
 describe('getDefinition', () => {
   it('should return correct definition for any gherkin position', () => {
-    const definition0 = s.getDefinition('When I do something', '');
-    const definition21 = s.getDefinition('When I do something', '');
+    const definition0 = s.getDefinition('When I do something', '', 0);
+    const definition21 = s.getDefinition('When I do something', '', 0);
     expect(definition0).not.toBeNull();
     expect(definition21).not.toBeNull();
   });
   it('should not return definition for missing step', () => {
-    const definition = s.getDefinition('When I do something else', '');
+    const definition = s.getDefinition('When I do something else', '', 0);
     expect(definition).toBeNull();
   });
   it('should correctly handle spaces at the line beginning', () => {
-    const definition = s.getDefinition('   When I do something', '');
+    const definition = s.getDefinition('   When I do something', '', 0);
     expect(definition).not.toBeNull();
   });
   it('should not return definition for a non-Gherkin line', () => {
-    expect(s.getDefinition('Feature: no step here', '')).toBeNull();
+    expect(s.getDefinition('Feature: no step here', '', 0)).toBeNull();
   });
 });
 
