@@ -1,21 +1,21 @@
 {
   "name": "cucumberautocomplete",
   "version": "3.2.0",
-  "publisher": "alexkrechik",
+  "publisher": "xemulv",
   "author": "Alexander Krechik",
   "license": "MIT",
   "displayName": "Cucumber (Gherkin) Full Support",
-  "description": "VSCode Cucumber (Gherkin) Full Language Support + Formatting + Autocomplete",
+  "description": "VSCode Cucumber (Gherkin) Full Language Support + Formatting + Autocomplete. Fork of alexkrechik/VSCucumberAutoComplete",
   "homepage": "https://github.com/alexkrechik/VSCucumberAutoComplete",
   "engines": {
     "vscode": "^1.75.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexkrechik/VSCucumberAutoComplete"
+    "url": "https://github.com/xemulv/VSCucumberAutoComplete"
   },
   "bugs": {
-    "url": "https://github.com/alexkrechik/VSCucumberAutoComplete/issues"
+    "url": "https://github.com/xemulv/VSCucumberAutoComplete/issues"
   },
   "categories": [
     "Programming Languages"

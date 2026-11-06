@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 
-const extensionId = 'alexkrechik.cucumberautocomplete';
+const extensionId = 'xemulv.cucumberautocomplete';
 type DefinitionResult = readonly (vscode.Location | vscode.LocationLink)[];
 
 function delay(milliseconds: number): Promise<void> {
